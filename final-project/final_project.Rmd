@@ -20,6 +20,7 @@ options(warn = -1)
     + [Hypothesis Formation](#hypothesis)  
     + [Cross-Validation](#validation)  
 * [Conclusion](#conclusion)  
+* [Further Reading](#reading)
 
 ##Introduction {#Introduction}
 
@@ -102,6 +103,7 @@ schoolData %>%
   scale_y_continuous(labels = scales::dollar) +
   labs(title="Tuition vs Acceptance Rate", x="Acceptance Rate (%)", y="Tuition", subtitle = paste0("Correlation: ", round(acc_cor, digits = 3))) 
 ```
+
 We fit a linear model for the data. A regression line is an equation that uses an explanatory variable (acceptance rate) to best predict a dependent variable (tuition). We calculated correlation as well, which is a measure of strength of relationship. A correlation of `r round(acc_cor, digits = 3)` indicates a moderate inverse relationship. As acceptance rate increases, tuition decreases (and vice versa).
 
 Acceptance rate seems to have an effect on tuition; what about SAT scores?
@@ -156,7 +158,7 @@ lm(tuition ~ `acceptance-rate`, data=schoolData) %>%
 ```
 
 This output shows us the coeffecients in our linear model. In this case:  
-Tuition = 51443.3375 - 328.7559*AcceptanceRate  
+`Tuition = 51443.3375 - 328.7559*AcceptanceRate`  
 So as acceptance rate increases, tuition decreases. The p-value is a measure of the probability that an observed value is the result of random variation. We aim for a p-value under a certain threshold, called and alpha level. A common alpha level is 0.05. With a p-value of 0, we see that there is an extremely slim (hell it's 0!) chance that acceptance-rate doesn't predict tuition. Now let's see how our second linear model holds up.
 
 ```{r}
@@ -251,7 +253,7 @@ I hope you have gotten an idea of the data science pipeline. It really is an ite
 
 As for our data set, it seems that tuition isn't as easy to predict as we originally thought. Perhaps there are factors that this data set doesn't include, such as school endowment, state educational budget (for public schools), or maybe tuition is inflated for those schools ranked highly by the media.
 
-##Further Reading
+##Further Reading {#reading}
  * dplyr: https://dplyr.tidyverse.org/  
  * jsonlite: https://www.rdocumentation.org/packages/jsonlite/versions/1.5  
  * kableExtra: https://haozhu233.github.io/kableExtra/awesome_table_in_html.html  
