@@ -1,0 +1,266 @@
+---
+title: "University Tuition and Ranking Statistics"
+author: "Eric Mott"
+date: "May 18, 2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+options(warn = -1)
+```
+
+* [Introduction](#Introduction)  
+* [1. Gathering Data](#Gathering)  
+    + [Tidying Data](#Tidying)  
+* [2. Exploratory Data Analysis](#explore)  
+    + [Visualizations](#visual)  
+    + [Summary Statistics](#statistics)  
+* [3. Machine Learning](#machine)  
+    + [Hypothesis Formation](#hypothesis)  
+    + [Cross-Validation](#validation)  
+* [Conclusion](#conclusion)  
+
+##Introduction {#Introduction}
+
+Is college tuition easy to predict? In this tutorial we will be analyzing data from 311 American Colleges and Universities to answer just that. We will show you how to access the data and clean it up. Then we will perform exploratory visualization and analysis. Later we will form a hypothesis and test it with machine learning. 
+
+The dataset was created by US News and is available at https://www.kaggle.com/theriley106/university-statistics. Download from that page to follow along.
+
+
+##1. Gathering Data {#Gathering}
+
+The data comes to us in a JSON (JavaScript Object Notation) file. We can't work directly with JSON so let's read the file and convert the data to a data frame. 
+
+```{r}
+#libraries
+suppressMessages(library(dplyr))
+suppressMessages(library(jsonlite))
+suppressMessages(library(knitr))
+suppressMessages(library(kableExtra))
+
+schoolData <- fromJSON("schoolInfo.json") %>% as_data_frame()
+```
+We are using several libraries here. If you're interested in learning more about each, see the following:
+
+dplyr: https://dplyr.tidyverse.org/  
+jsonlite: https://www.rdocumentation.org/packages/jsonlite/versions/1.5  
+kableExtra: https://haozhu233.github.io/kableExtra/awesome_table_in_html.html  
+knitr: https://github.com/yihui/knitr  
+
+Now let's take a look at the first few entries and then print out all the attributes of this data.
+```{r}
+#print first 6 rows
+schoolData %>% 
+  head() %>% 
+  kable("html") %>%
+  kable_styling() %>%
+  scroll_box(width = "100%")
+
+#print column (attribute) names
+schoolData %>% names()
+```
+### Tidying Data {#Tidying}
+Some of the attributes are unecessary for our purposes. We'll select only the attributes we need and reorder the data to make it easier to read.
+```{r}
+schoolData <- schoolData %>% select(displayName, city, state, overallRank, tuition, enrollment, `acceptance-rate`, `act-avg`, `sat-avg`, `hs-gpa-avg`, institutionalControl, rankingIsTied)
+
+schoolData$institutionalControl <- factor(schoolData$institutionalControl)
+schoolData$state <- factor(schoolData$state)
+
+schoolData %>% 
+  kable("html") %>%
+  kable_styling() %>%
+  scroll_box(width = "100%", height = "400px")
+```
+
+##2. Exploratory Data Analysis {#explore}
+Our data is now tidy and we have familiarized ourselves with its attributes. We can perform data analysis to see patterns in the data. Patterns we observe now can later be used to form a hypothesis test. A question of interest is how is tuition related to factors such as acceptance rate, test scores, etc? 
+
+###Visualizations {#visual}
+We'll be using ggplot2 (http://ggplot2.tidyverse.org/) to make graphs.
+
+Let's first look at a boxplot of tuition by institution type. 
+```{r}
+library(ggplot2)
+schoolData %>% ggplot(aes(x=institutionalControl, y=tuition)) +
+  geom_boxplot() +
+  scale_y_continuous(labels = scales::dollar) +
+  labs(title="Tuition by Institution Type", x = "institution type", y = "tutition")
+```
+
+No surprise here! Private universities tend to be more expensive than public universities. Interesting that proprietary universities have very reasonable tuition (these are universities that are run as corporations, for profit).
+
+Now say we want to know if acceptance rate affects tuition? 
+```{r}
+acc_cor <- cor(schoolData$`acceptance-rate`, schoolData$tuition, use = "na.or.complete")
+
+schoolData %>% 
+  ggplot(aes(x=`acceptance-rate`, y=tuition)) +
+  geom_point() +
+  geom_smooth(method="lm") +
+  scale_y_continuous(labels = scales::dollar) +
+  labs(title="Tuition vs Acceptance Rate", x="Acceptance Rate (%)", y="Tuition", subtitle = paste0("Correlation: ", round(acc_cor, digits = 3))) 
+```
+We fit a linear model for the data. A regression line is an equation that uses an explanatory variable (acceptance rate) to best predict a dependent variable (tuition). We calculated correlation as well, which is a measure of strength of relationship. A correlation of `r round(acc_cor, digits = 3)` indicates a moderate inverse relationship. As acceptance rate increases, tuition decreases (and vice versa).
+
+Acceptance rate seems to have an effect on tuition; what about SAT scores?
+
+```{r}
+sat_cor <- cor(schoolData$`sat-avg`, schoolData$tuition, use = "na.or.complete")
+
+schoolData %>% 
+  ggplot(aes(x=`sat-avg`, y=tuition)) +
+  geom_point() + 
+  geom_smooth(method="lm") +
+  scale_y_continuous(labels = scales::dollar) +
+  labs(title="Tuition vs Avg. SAT Score", x="Average SAT score", y="Tuition", subtitle = paste0("Correlation: ", round(sat_cor, digits = 3)))
+```
+
+Again, we see that SAT score is correlated to tuition, this time more stongly than acceptance rate. We can start to see that certain variables are related to tuition, namely institution type (public, private, etc.), acceptance rate, and SAT scores.
+
+###Summary Statistics {#statistics}
+We've explored data visually. How about looking at summary statistics? We'll look at the distribution of tuition via a histogram. Then we'll look at the Five Number Summary.
+
+```{r}
+schoolData %>%
+  ggplot(aes(x=tuition)) +
+  geom_histogram(bins = 30) +
+  geom_vline(aes(xintercept=median(tuition), color="median")) +
+  geom_vline(aes(xintercept=mean(tuition), color="mean")) +
+scale_colour_manual(name="Line Color", values=c(median="red", mean="blue"))
+
+summary(schoolData$tuition)
+```
+
+Tuition looks to be a bimodal (possibly even trimodal) variable. Could this be a result of the tuition differences between private and public institutions? The Five Number Summary shows use the minimum (0%), 1st quartile (25%), median (50%), 3rd quartile (75%), and maximum (100%) values. This function also threw in the mean as a bonus! Notice that the median is lower than the mean because the mean is skewed upwards by the medium-sized mode on the right side of the histogram.
+
+##3. Machine Learning {#machine}
+We have gotten a feel for the data by creating some visualizations. Now it's time to answer some questions with the data. At the beginning we talked about predicting tuition given other variables. From our exploratory analysis, we saw that acceptance rate and SAT score are moderately to strongly related to tuition. We also saw that tuition varied greatly between public and private schools. Can we use these three variables to predict tuition?
+
+###Hypothesis Formation {#hypothesis}
+Since our data looks fairly linear, we will make two linear models to compare.   
+Linear model 1: tuition = acceptance  
+Linear model 2: tution = SAT \* acceptance \* institutionalControl  
+
+```{r}
+library(broom)
+#turn off scientific notation
+options(scipen=999)
+
+#model 1
+lm(tuition ~ `acceptance-rate`, data=schoolData) %>% 
+  tidy() %>% 
+  kable("html") %>%
+  kable_styling()
+```
+
+This output shows us the coeffecients in our linear model. In this case:  
+Tuition = 51443.3375 - 328.7559*AcceptanceRate  
+So as acceptance rate increases, tuition decreases. The p-value is a measure of the probability that an observed value is the result of random variation. We aim for a p-value under a certain threshold, called and alpha level. A common alpha level is 0.05. With a p-value of 0, we see that there is an extremely slim (hell it's 0!) chance that acceptance-rate doesn't predict tuition. Now let's see how our second linear model holds up.
+
+```{r}
+#model 2 with interactions
+lm(tuition~`sat-avg`*`acceptance-rate`*institutionalControl, data=schoolData) %>% 
+  tidy() %>% 
+  kable("html") %>%
+  kable_styling()
+```
+
+There is a lot going on here. When we write a formula with `sat-avg*acceptance-rate*institutionalControl`, we are forming what we call interaction variables. An interaction variable is one comprised of two or more predictors. For instance, we have here sat-avg:acceptance-rate as a single variable. `sat-avg*acceptance-rate*institutionalControl` is shorthand for the sum of all the variables in the "terms" column.
+
+Looking at the p-values in the table, we see that some variables are better predictors than other. For instance, sat-avg and acceptance-rate have p-values less than our alpha level of 0.05, but institutionalControlpublic has a p-value of 0.43. 
+
+After seeing our models, we need to formalize our question into a testable hypothesis. We create a Null hypothesis and an Alternative hypothesis. The alternative hypothesis is what we are ultimately trying to prove correct, but what will actually happen is we will either *fail* to reject the null hypothesis or we will reject the null hypothesis.
+
+**Null:** Model 1 and model 2 predict tuition equally well  
+**Alternative:** Model 1 and model 2 predict tuition differently (i.e. one is better than the other)  
+
+###Cross-Validation {#validation}
+To compare the models, we will be using a technique called k-fold cross-validation. Cross-validation is a method in which we repeatedly split our data into two sets: a training set and a testing set. For k times we train the data, then test its accuracy by using it to predict the test set. Specifically, the algorithm is as follows:  
+
+    1. Partition our data randomly into k groups (which are called folds)  
+    2. For each of the k folds:  
+        a. Train model on observations in the other k - 1 folds  
+        b. Calculate error versus the test set  
+    3. Calculate averge error accross k folds  
+
+We'll then use the calculated error to test our hypothesis. If you are confused about cross-validation or would like to learn more on the subject, see the following:  
+
+* https://machinelearningmastery.com/train-final-machine-learning-model/
+* http://www.hcbravo.org/IntroDataSci/bookdown-notes/model-selection.html#cross-validation
+
+```{r}
+library(cvTools)
+library(tidyr)
+
+#make 10 folds (10 groups of entities)
+fold_indices <- cvFolds(n=nrow(schoolData), K=10)
+
+crossValidate <- function(fold_index) {
+  test_indices <- which(fold_indices$which == fold_index)
+  
+  #split into test and train sets
+  test_set <- schoolData[test_indices,]
+  train_set <- schoolData[-test_indices,]
+
+  #make two models
+  model1 <- lm(tuition~`acceptance-rate`, data=train_set)
+  model2 <- lm(tuition~`acceptance-rate`*`sat-avg`*institutionalControl, data=train_set)
+  
+  #use model to predict test sets
+  model1_pred <- predict(model1, newdata=test_set, type="response", na.action = na.omit)
+  model2_pred <- predict(model2, newdata=test_set, type="response", na.action = na.omit)
+  
+  #calculate mean squared error
+  model1_error <- mean(test_set$tuition - model1_pred)
+  model2_error <- mean(test_set$tuition - model2_pred)
+  
+  #return statement
+  c(model1_error, model2_error)
+}
+
+#run test 10 times
+error_rates <- sapply(1:10, crossValidate)
+
+# format results
+rownames(error_rates) <- c("model 1", "model 2")
+error_rates <- as.data.frame(t(error_rates))
+error_rates <- error_rates %>%
+  mutate(fold=1:n()) %>%
+  gather(method,error,-fold)
+  
+error_rates %>%
+  kable("html") %>%
+  kable_styling() %>%
+  scroll_box(width = "100%", height = "400px")
+
+```
+We have our error rates for the respective models. Now let's create a model to see if the method affects the error. If it doesn't then the two methods are the same in their prediction capability. However, if method does predict error, then we know one of the models is better than the other.
+
+```{r}
+lm(error~method, data=error_rates) %>% 
+  tidy() %>%
+  kable("html") %>%
+  kable_styling()
+```
+Remember the alpha level we've been using? Yes, it's 0.05. In this model, `methodmodel 2` is the variable predicting error. It has a p-value of 0.0629, which is just above our alpha level. DARN! This means that we fail to reject the null hypothesis. Thus both models have the same prediction capability. Looks like we need some slightly better predictors, but I'll leave that for you to do.
+
+##Conclusion {#conclusion}
+I hope you have gotten an idea of the data science pipeline. It really is an iterative process. We could take our findings from our cross-validation experiment to choose a different model, or we could revisit the data to form new visualizations. It's all up to you, the data scientist.
+
+As for our data set, it seems that tuition isn't as easy to predict as we originally thought. Perhaps there are factors that this data set doesn't include, such as school endowment, state educational budget (for public schools), or maybe tuition is inflated for those schools ranked highly by the media.
+
+##Further Reading
+ * dplyr: https://dplyr.tidyverse.org/  
+ * jsonlite: https://www.rdocumentation.org/packages/jsonlite/versions/1.5  
+ * kableExtra: https://haozhu233.github.io/kableExtra/awesome_table_in_html.html  
+ * knitr: https://github.com/yihui/knitr
+ Cross-Validation
+ * https://machinelearningmastery.com/train-final-machine-learning-model/
+ * http://www.hcbravo.org/IntroDataSci/bookdown-notes/model-selection.html#cross-validation
+ 
+ 
+ 
+ 
+ 
