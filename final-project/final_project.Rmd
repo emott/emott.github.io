@@ -258,7 +258,7 @@ As for our data set, it seems that tuition isn't as easy to predict as we origin
  * jsonlite: https://www.rdocumentation.org/packages/jsonlite/versions/1.5  
  * kableExtra: https://haozhu233.github.io/kableExtra/awesome_table_in_html.html  
  * knitr: https://github.com/yihui/knitr
- * ggplot: http://ggplot2.tidyverse.org/
+ * ggplot: http://ggplot2.tidyverse.org/  
  Cross-Validation
  * https://machinelearningmastery.com/train-final-machine-learning-model/
  * http://www.hcbravo.org/IntroDataSci/bookdown-notes/model-selection.html#cross-validation
