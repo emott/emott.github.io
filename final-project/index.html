@@ -12922,7 +12922,7 @@ FALSE
 </div>
 <div id="explore" class="section level2">
 <h2>2. Exploratory Data Analysis</h2>
-<p>Our data is now tidy and we have familiarized ourselves with its attributes. We can perform data analysis to see patterns in the data. Patterns we observe now can later be used to form a hypothesis test. A question of interest is how is tuition related to factors such as acceptance rate, test scores, etc?</p>
+<p>Our data is now tidy and we have familiarized ourselves with its attributes. We can perform data analysis to see patterns in the data. Patterns we observe now can later be used to form a hypothesis test. A question of interest is how tuition is related to factors such as acceptance rate, test scores, etc.</p>
 <div id="visual" class="section level3">
 <h3>Visualizations</h3>
 <p>We’ll be using ggplot2 (<a href="http://ggplot2.tidyverse.org/" class="uri">http://ggplot2.tidyverse.org/</a>) to make graphs.</p>
@@ -13214,7 +13214,7 @@ institutionalControlpublic
 </tr>
 </tbody>
 </table>
-<p>There is a lot going on here. When we write a formula with <code>sat-avg*acceptance-rate*institutionalControl</code>, we are forming what we call interaction variables. An interaction variable is one comprised of two or more predictors. For instance, we have here sat-avg:acceptance-rate as a single variable. <code>sat-avg*acceptance-rate*institutionalControl</code> is shorthand for the sum of all the variables in the “terms” column.</p>
+<p>There is a lot going on here. When we write a formula with <code>sat-avg*acceptance-rate*institutionalControl</code>, we are forming what we call interaction variables. An interaction variable is one comprised of two or more predictors. For instance, we have here <code>sat-avg:acceptance-rate</code> as a single variable. <code>sat-avg*acceptance-rate*institutionalControl</code> is shorthand for the sum of all the variables in the “terms” column.</p>
 <p>Looking at the p-values in the table, we see that some variables are better predictors than other. For instance, sat-avg and acceptance-rate have p-values less than our alpha level of 0.05, but institutionalControlpublic has a p-value of 0.43.</p>
 <p>After seeing our models, we need to formalize our question into a testable hypothesis. We create a Null hypothesis and an Alternative hypothesis. The alternative hypothesis is what we are ultimately trying to prove correct, but what will actually happen is we will either <em>fail</em> to reject the null hypothesis or we will reject the null hypothesis.</p>
 <p><strong>Null:</strong> Model 1 and model 2 predict tuition equally well<br />
@@ -13596,7 +13596,8 @@ methodmodel 2
 </li>
 <li>kableExtra: <a href="https://haozhu233.github.io/kableExtra/awesome_table_in_html.html" class="uri">https://haozhu233.github.io/kableExtra/awesome_table_in_html.html</a><br />
 </li>
-<li>knitr: <a href="https://github.com/yihui/knitr" class="uri">https://github.com/yihui/knitr</a> Cross-Validation</li>
+<li>knitr: <a href="https://github.com/yihui/knitr" class="uri">https://github.com/yihui/knitr</a></li>
+<li>ggplot: <a href="http://ggplot2.tidyverse.org/" class="uri">http://ggplot2.tidyverse.org/</a> Cross-Validation</li>
 <li><a href="https://machinelearningmastery.com/train-final-machine-learning-model/" class="uri">https://machinelearningmastery.com/train-final-machine-learning-model/</a></li>
 <li><a href="http://www.hcbravo.org/IntroDataSci/bookdown-notes/model-selection.html#cross-validation" class="uri">http://www.hcbravo.org/IntroDataSci/bookdown-notes/model-selection.html#cross-validation</a></li>
 </ul>

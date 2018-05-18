@@ -76,7 +76,7 @@ schoolData %>%
 ```
 
 ##2. Exploratory Data Analysis {#explore}
-Our data is now tidy and we have familiarized ourselves with its attributes. We can perform data analysis to see patterns in the data. Patterns we observe now can later be used to form a hypothesis test. A question of interest is how is tuition related to factors such as acceptance rate, test scores, etc? 
+Our data is now tidy and we have familiarized ourselves with its attributes. We can perform data analysis to see patterns in the data. Patterns we observe now can later be used to form a hypothesis test. A question of interest is how tuition is related to factors such as acceptance rate, test scores, etc. 
 
 ###Visualizations {#visual}
 We'll be using ggplot2 (http://ggplot2.tidyverse.org/) to make graphs.
@@ -169,7 +169,7 @@ lm(tuition~`sat-avg`*`acceptance-rate`*institutionalControl, data=schoolData) %>
   kable_styling()
 ```
 
-There is a lot going on here. When we write a formula with `sat-avg*acceptance-rate*institutionalControl`, we are forming what we call interaction variables. An interaction variable is one comprised of two or more predictors. For instance, we have here sat-avg:acceptance-rate as a single variable. `sat-avg*acceptance-rate*institutionalControl` is shorthand for the sum of all the variables in the "terms" column.
+There is a lot going on here. When we write a formula with `sat-avg*acceptance-rate*institutionalControl`, we are forming what we call interaction variables. An interaction variable is one comprised of two or more predictors. For instance, we have here `sat-avg:acceptance-rate` as a single variable. `sat-avg*acceptance-rate*institutionalControl` is shorthand for the sum of all the variables in the "terms" column.
 
 Looking at the p-values in the table, we see that some variables are better predictors than other. For instance, sat-avg and acceptance-rate have p-values less than our alpha level of 0.05, but institutionalControlpublic has a p-value of 0.43. 
 
@@ -258,6 +258,7 @@ As for our data set, it seems that tuition isn't as easy to predict as we origin
  * jsonlite: https://www.rdocumentation.org/packages/jsonlite/versions/1.5  
  * kableExtra: https://haozhu233.github.io/kableExtra/awesome_table_in_html.html  
  * knitr: https://github.com/yihui/knitr
+ * ggplot: http://ggplot2.tidyverse.org/
  Cross-Validation
  * https://machinelearningmastery.com/train-final-machine-learning-model/
  * http://www.hcbravo.org/IntroDataSci/bookdown-notes/model-selection.html#cross-validation
